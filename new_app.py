@@ -27,7 +27,7 @@ def add_plan():
         #last_seen = datetime.datetime.utcnow()
         creation = datetime.datetime.utcnow()
         #if user_task and user_time:
-        status = db.Plan.insert_one({
+        status = db.Plan.insert({
                 "id" : data['id'],
                 "name" : data['name'],
                 "price":{"amount":data['amount'],"currency":data['currency']},
@@ -92,7 +92,7 @@ def get_all_contact():#customer_id,**kwargs):
         return dumps({'error' : str(e)})
 
 @app.route("/api/plan/<id>/update",methods=['POST'])
-def update_plan():
+def update_plan(id):
     try:
         data=json.loads(request.data)
         print data
@@ -185,4 +185,4 @@ def update_features():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port='5000',debug=True)
+    app.run(host='127.0.0.1', port=5000,debug=True)
