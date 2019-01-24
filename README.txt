@@ -30,11 +30,11 @@ and run new_app.py
 
 the apis are created as mentioned in the task.
 
--/add_customer
--/add_features
--/get_all_info
--/update_customer
--/update_features
+-/plan/create
+-/feature/create
+-/plan/list_all
+-/plan/id/update
+-/plan/limit
 
 the names of the api are self explainatory.
 
