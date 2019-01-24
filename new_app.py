@@ -16,8 +16,8 @@ date_format = "%Y-%m-%d %H:%M:%S.%f"
 
 
 
-@app.route("/add_customer", methods = ['POST'])
-def add_customer():
+@app.route("/api/plan/create", methods = ['POST'])
+def add_plan():
     try:
         data = json.loads(request.data)
 
@@ -27,9 +27,9 @@ def add_customer():
         #last_seen = datetime.datetime.utcnow()
         creation = datetime.datetime.utcnow()
         #if user_task and user_time:
-        status = db.Customer.insert({
-                "customer_id" : data['customer_id'],
-                "plan_name" : data['plan_name'],
+        status = db.Plan.insert_one({
+                "id" : data['id'],
+                "name" : data['name'],
                 "price":{"amount":data['amount'],"currency":data['currency']},
                 #"time": user_time,
                 #"ls": last_seen,
@@ -40,7 +40,7 @@ def add_customer():
         return dumps({'error' : str(e)})
 
 
-@app.route("/add_features", methods = ['POST'])
+@app.route("/api/feature/create", methods = ['POST'])
 def add_features():
     try:
         data = json.loads(request.data)
@@ -53,10 +53,10 @@ def add_features():
         creation = datetime.datetime.utcnow()
         #if user_task and user_time:
         status = db.Feature.insert({
-                "customer_id" : data['customer_id'],
-                "feature_type" : data['feature_type'],
-                "limit":{"amount":data['limit_amount'],"unit":data['limit_unit'],"balance":data['limit_balance']},
-                "extraCharge":{"amount":data['extra_charge_amount'],"currency":data['extra_charge_currency'],"unit":data['extra_charge_unit']},
+                "id" : data['id'],
+                "name" : data['name'],
+                "limit":{"amount":data['limit_amount'],"unit":data['limit_unit'],"balance":data['limit_balance'],
+                "extraCharge":{"amount":data['extra_charge_amount'],"currency":data['extra_charge_currency'],"unit":data['extra_charge_unit']}},
                 #"time": user_time,
                 #"ls": last_seen,
                 "creation":creation
@@ -69,25 +69,30 @@ def add_features():
 
 
 #veiw all the data
-@app.route("/get_all_info", methods = ['POST'])
+@app.route("/api/plan/list_all", methods = ['POST'])
 def get_all_contact():#customer_id,**kwargs):
     try:
         data = json.loads(request.data)
-        customer = db.Customer.find({"customer_id":data['customer_id']})
+        plan = db.Plan.find({"id":data['id']})
         #customer= 'Customer':list(customer)
-        print customer
-        features = db.Feature.find({"customer_id":data['customer_id']})
+        print plan
+        features = db.Feature.find({"id":data['id']})
         features = list(features)
-        print list(features)
-        info=[]
-        info.extend([customer,features])
+        #print list(features)
+        info={"Plan":{ "id":plan[0]['id'],"name":plan[0]['name'],
+                        "price":{"amount":plan[0]['price']['amount'],"currency":plan[0]['price']['currency']},
+                        "Feature":features}}
         print info
-        return dumps({"plan":customer,"Feature":features})
+        #info.extend([customer,features])
+        #print info
+        return dumps({"Plan":{ "id":plan[0]['id'],"name":plan[0]['name'],
+                        "price":{"amount":plan[0]['price']['amount'],"currency":plan[0]['price']['currency']},
+                        "Feature":features}})
     except Exception, e:
         return dumps({'error' : str(e)})
 
-@app.route("/update_customer",methods=['POST'])
-def update_customer():
+@app.route("/api/plan/<id>/update",methods=['POST'])
+def update_plan():
     try:
         data=json.loads(request.data)
         print data
@@ -95,11 +100,11 @@ def update_customer():
         '''status=db.Customer.replace_one(
             {"customer_id":data['customer_id']},
             {"plan_name":data['plan_name'],"amount":data['amount'],"currency":data['currency']})'''
-        user = db.Customer.update({
-                                "customer_id" : data['customer_id']
+        user = db.Plan.update({
+                                "id" : data['id']
                                 },{                                
                                 "$set": {
-                                        "plan_name":data['plan_name'],
+                                        "name":data['name'],
                                         "price":{"amount":data['amount'],"currency":data['currency']},
                                         "creation":creation
                                     }
@@ -108,9 +113,29 @@ def update_customer():
     except Exception, e:
         return dumps({"error":str(e)})
 
+@app.route("/api/plan/limit", methods = ['POST'])
+def view_limit():#customer_id,**kwargs):
+    try:
+        data = json.loads(request.data)
+        #plan = db.Plan.find({"id":data['id']})
+        #customer= 'Customer':list(customer)
+        #print plan
+        features = db.Feature.find({"id":data['id']})
+        features = list(features)
+        for data in features:
+            name = dumps({"name":data['name'],"limit":data['limit']})
+            print name
+            print data['name']
+            print data['limit']
+        #info=[]
+        #info.extend([customer,features])
+        #print info
+        return dumps({"Feature":features})
+    except Exception, e:
+        return dumps({'error' : str(e)})
 
-@app.route("/update_features",methods=['POST'])
-def update_features():
+@app.route("/api/plan/limit/update",methods=['POST'])
+def update_limit():
     try:
         data=json.loads(request.data)
         print data
@@ -118,6 +143,28 @@ def update_features():
         '''status=db.Customer.replace_one(
             {"customer_id":data['customer_id']},
             {"plan_name":data['plan_name'],"amount":data['amount'],"currency":data['currency']})'''
+        user = db.Feature.update({
+                                "id" : data['id'],"name" : data['name']
+                                },{                                
+                                "$set": {                                
+                                        "limit":{"amount":data['limit_amount'],"unit":data['limit_unit'],"balance":data['limit_balance'],
+                                        "extraCharge":{"amount":data['extra_charge_amount'],"currency":data['extra_charge_currency'],"unit":data['extra_charge_unit']}},
+                                        "creation":creation
+                                    }
+                                })
+        return dumps({"message":"Updated Succesfully"})
+    except Exception, e:
+        return dumps({"error":str(e)})
+
+
+
+'''@app.route("/update_features",methods=['POST'])
+def update_features():
+    try:
+        data=json.loads(request.data)
+        print data
+        creation = datetime.datetime.utcnow()
+        
         user = db.Feature.update({
                                 "customer_id" : data['customer_id'],"feature_type" : data['feature_type']
                                 },{                                
@@ -129,9 +176,13 @@ def update_features():
                                 })
         return dumps({"message":"Updated Succesfully"})
     except Exception, e:
-        return dumps({"error":str(e)})
+        return dumps({"error":str(e)})'''
+
+
+
+
 
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=5000,debug=True)
+    app.run(host='127.0.0.1', port='5000',debug=True)
