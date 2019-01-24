@@ -22,4 +22,20 @@ Algorithm used:
 5. create a json that looks like: {"task":"","time":"", "last seen":"", "creation time":""}
 6. run a script that finds the difference between the last seen and the current time and checks with the time interval and then updates the last seen time to current time.
 
+NEW Task- new_app.py
+
+This the new task, asked to complete.
+Run the requirements.txt.
+and run new_app.py
+
+the apis are created as mentioned in the task.
+
+-/add_customer
+-/add_features
+-/get_all_info
+-/update_customer
+-/update_features
+
+the names of the api are self explainatory.
+
 I hope I have successfully completed the task as expected.
